@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+websockets
+pandas
+openai
+python-dotenv
+google-generativeai

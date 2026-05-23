@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background: radial-gradient(circle at 20% -10%, #1a1f4a 0%, #0b1020 45%) #0b1020;
+  color: #e6e9f4;
+  min-height: 100vh;
+}
+
+/* glassmorphism panel */
+.glass {
+  background: linear-gradient(180deg,
+      rgba(22, 29, 54, 0.65) 0%,
+      rgba(17, 23, 43, 0.75) 100%);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(124, 92, 255, 0.18) 50%,
+      transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+.scroll-y::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-y::-webkit-scrollbar-thumb {
+  background: #2a3358;
+  border-radius: 8px;
+}

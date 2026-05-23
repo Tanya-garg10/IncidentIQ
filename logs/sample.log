@@ -1,0 +1,8 @@
+2026-05-23T11:58:00 INFO: api-gateway: server started
+2026-05-23T11:58:05 INFO: auth-service: db connection established
+2026-05-23T11:59:12 INFO: payment-service: cache hit
+2026-05-23T11:59:30 INFO: user-service: health check passed
+2026-05-23T12:00:14 WARNING: payment-service: high CPU usage detected
+2026-05-23T12:01:02 ERROR: payment-service: database connection timeout
+2026-05-23T12:01:45 ERROR: api-gateway: API response delayed
+2026-05-23T12:02:30 CRITICAL: payment-service: service crashed
