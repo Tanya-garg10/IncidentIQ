@@ -2,11 +2,15 @@
 
 Uses the active LLM provider (Groq / OpenAI / Gemini) when a key is set;
 otherwise a deterministic keyword-based responder so the demo always works.
+
+Includes rate-limit cooldown: on 429 we fall back to the rule-based
+responder for COOLDOWN_SECONDS so the chat panel never stops working.
 """
 
 import sys
+import time
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 # Reach into ai-engine/ for the unified LLM provider
 _AI_DIR = Path(__file__).resolve().parent.parent / "ai-engine"
@@ -22,8 +26,13 @@ SYSTEM = (
     "(under 120 words). If the logs don't contain the answer, say so."
 )
 
+COOLDOWN_SECONDS = 300
+_cooldown_until: float = 0.0
+_last_error: Optional[str] = None
+
 
 def _llm_answer(question: str, logs: List[str]) -> str:
+    # Trim logs to last 40 lines to save tokens
     return llm_chat(
         [
             {"role": "system", "content": SYSTEM},
@@ -31,7 +40,7 @@ def _llm_answer(question: str, logs: List[str]) -> str:
                 "role": "user",
                 "content": (
                     f"Question: {question}\n\n"
-                    f"Recent logs:\n" + "\n".join(logs[-80:])
+                    f"Recent logs:\n" + "\n".join(logs[-40:])
                 ),
             },
         ],
@@ -68,14 +77,29 @@ def _fallback_answer(question: str, logs: List[str]) -> str:
 
 
 def answer(question: str, logs: List[str]) -> dict:
+    global _cooldown_until, _last_error
+
     provider = active_provider()
-    if provider:
-        try:
-            return {"answer": _llm_answer(question, logs), "engine": provider}
-        except Exception as exc:
-            return {
-                "answer": _fallback_answer(question, logs),
-                "engine": "rule-based",
-                "llm_error": str(exc),
-            }
-    return {"answer": _fallback_answer(question, logs), "engine": "rule-based"}
+    if not provider:
+        return {"answer": _fallback_answer(question, logs), "engine": "rule-based"}
+
+    # Honour cooldown so we don't keep banging on a rate-limited provider
+    if time.time() < _cooldown_until:
+        return {
+            "answer": _fallback_answer(question, logs),
+            "engine": "rule-based",
+            "llm_error": _last_error or "rate limit cooldown",
+        }
+
+    try:
+        return {"answer": _llm_answer(question, logs), "engine": provider}
+    except Exception as exc:
+        msg = str(exc)
+        if "429" in msg or "rate_limit" in msg.lower():
+            _cooldown_until = time.time() + COOLDOWN_SECONDS
+            _last_error = "rate limit"
+        return {
+            "answer": _fallback_answer(question, logs),
+            "engine": "rule-based",
+            "llm_error": msg,
+        }

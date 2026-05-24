@@ -35,7 +35,9 @@ export default function Dashboard() {
 
     useEffect(() => {
         refresh();
-        const id = setInterval(refresh, 5000);
+        // Poll every 15s — keeps token usage low and respects free-tier rate limits.
+        // Live log updates still arrive instantly via the WebSocket.
+        const id = setInterval(refresh, 15000);
         return () => clearInterval(id);
     }, [refresh]);
 
