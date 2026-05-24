@@ -1,15 +1,21 @@
 """SQLite-backed incident history and deployment tracking.
 
-Zero-config: file lives at backend/incidents.db. Stdlib only.
+Zero-config: file lives at backend/incidents.db by default.
+Override with INCIDENTIQ_DB_PATH env var (e.g. on Render's free tier set it
+to /tmp/incidents.db since the project dir is read-only). Stdlib only.
 """
 
+import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 from threading import Lock
 from typing import Dict, List, Optional
 
-DB_PATH = Path(__file__).resolve().parent / "incidents.db"
+DB_PATH = Path(
+    os.getenv("INCIDENTIQ_DB_PATH")
+    or Path(__file__).resolve().parent / "incidents.db"
+)
 _lock = Lock()
 
 
