@@ -26,9 +26,16 @@ SYSTEM = (
     "(under 120 words). If the logs don't contain the answer, say so."
 )
 
-COOLDOWN_SECONDS = 300
+COOLDOWN_SECONDS = 60
 _cooldown_until: float = 0.0
 _last_error: Optional[str] = None
+
+
+def reset_cooldown() -> None:
+    """Manually clear the rate-limit cooldown."""
+    global _cooldown_until, _last_error
+    _cooldown_until = 0.0
+    _last_error = None
 
 
 def _llm_answer(question: str, logs: List[str]) -> str:

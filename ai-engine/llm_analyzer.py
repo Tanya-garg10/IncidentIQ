@@ -39,10 +39,19 @@ Logs:
 
 # Cache the last analysis so we don't re-call the LLM if logs haven't meaningfully changed
 _cache: Dict[str, Dict] = {}
-# Rate-limit cooldown — if we hit 429, suspend LLM calls for this many seconds
-COOLDOWN_SECONDS = 300
+# Rate-limit cooldown — if we hit 429, suspend LLM calls for this many seconds.
+# Short for hackathon demos so quota recovers fast; bump to 300+ in production.
+COOLDOWN_SECONDS = 60
 _cooldown_until: float = 0.0
 _last_error: Optional[str] = None
+
+
+def reset_cooldown() -> None:
+    """Manually clear the rate-limit cooldown (useful right before a demo)."""
+    global _cooldown_until, _last_error, _cache
+    _cooldown_until = 0.0
+    _last_error = None
+    _cache.clear()
 
 
 def _fingerprint(logs: List[str]) -> str:

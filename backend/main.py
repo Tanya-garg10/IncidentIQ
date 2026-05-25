@@ -208,6 +208,29 @@ def report_download():
 
 # --- Demo control ---------------------------------------------------------
 
+@app.post("/admin/reset-cooldown")
+def reset_cooldown_endpoint():
+    """Clear the LLM rate-limit cooldown so the next request hits the LLM again.
+
+    Hit this right before recording a demo if a previous quota error left the
+    backend in fallback mode. Also clears the analyzer's response cache so the
+    next /analyze call returns fresh LLM output.
+    """
+    import sys
+    from pathlib import Path
+
+    _AI_DIR = Path(__file__).resolve().parent.parent / "ai-engine"
+    if str(_AI_DIR) not in sys.path:
+        sys.path.insert(0, str(_AI_DIR))
+
+    import chat as chat_mod
+    import llm_analyzer
+
+    chat_mod.reset_cooldown()
+    llm_analyzer.reset_cooldown()
+    return {"ok": True, "message": "LLM cooldown and cache cleared"}
+
+
 @app.post("/simulate")
 async def simulate():
     lines = burst_incident()
